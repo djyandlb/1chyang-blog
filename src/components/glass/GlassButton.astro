@@ -6,9 +6,10 @@ export interface Props {
   href?: string;
   type?: 'button' | 'submit';
   class?: string;
+  id?: string;
 }
 
-const { variant = 'ghost', size = 'md', href, type = 'button', class: extraClass = '' } = Astro.props;
+const { variant = 'ghost', size = 'md', href, type = 'button', class: extraClass = '', id } = Astro.props;
 
 // 自动补全外链协议
 const finalHref = href && !href.startsWith('http://') && !href.startsWith('https://') && !href.startsWith('/') && !href.startsWith('#')
@@ -28,7 +29,7 @@ const fullClass = `${baseClass} ${sizeClass} ${variantClass} ${extraClass}`;
 ---
 
 {finalHref ? (
-  <a href={finalHref} target={isExternal ? '_blank' : undefined} rel={isExternal ? 'noopener noreferrer' : undefined} class={fullClass} style={style}><slot /></a>
+  <a href={finalHref} id={id} target={isExternal ? '_blank' : undefined} rel={isExternal ? 'noopener noreferrer' : undefined} class={fullClass} style={style}><slot /></a>
 ) : (
-  <button type={type} class={fullClass} style={style}><slot /></button>
+  <button type={type} id={id} class={fullClass} style={style}><slot /></button>
 )}
