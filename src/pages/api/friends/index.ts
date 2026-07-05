@@ -5,7 +5,8 @@ import { getAllFriends, createFriend } from '../../../lib/friends';
 export const prerender = false;
 
 export async function GET() {
-  return new Response(JSON.stringify(getAllFriends()), {
+  const friends = await getAllFriends();
+  return new Response(JSON.stringify(friends), {
     status: 200,
     headers: { 'Content-Type': 'application/json' },
   });

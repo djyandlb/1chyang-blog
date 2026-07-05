@@ -37,9 +37,9 @@ export async function PUT({ params, request }: APIContext) {
     }
 
     const body = await request.json();
-    const { title, description, url, icon, tags } = body;
+    const { title, description, url, icon, tags, fileUrl, fileName } = body;
 
-    const updated = await updateWork(id, { title, description, url, icon, tags });
+    const updated = await updateWork(id, { title, description, url, icon, tags, fileUrl, fileName });
 
     if (!updated) {
       return new Response(JSON.stringify({ error: '作品不存在' }), {

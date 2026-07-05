@@ -15,7 +15,7 @@ export async function GET() {
 export async function POST({ request }: APIContext) {
   try {
     const body = await request.json();
-    const { title, description, url, icon, tags } = body;
+    const { title, description, url, icon, tags, fileUrl, fileName } = body;
 
     if (!title) {
       return new Response(JSON.stringify({ error: '标题为必填项' }), {
@@ -30,6 +30,8 @@ export async function POST({ request }: APIContext) {
       url: url || '',
       icon: icon || '📦',
       tags: tags || [],
+      fileUrl: fileUrl || '',
+      fileName: fileName || '',
     });
 
     return new Response(JSON.stringify(work), {

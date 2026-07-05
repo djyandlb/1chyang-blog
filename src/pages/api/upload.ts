@@ -28,7 +28,7 @@ export async function POST({ request }: APIContext) {
     const filename = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
     const buffer = Buffer.from(await file.arrayBuffer());
 
-    saveFile(filename, file.name, buffer, file.type || 'application/octet-stream');
+    await saveFile(filename, file.name, buffer, file.type || 'application/octet-stream');
 
     return new Response(JSON.stringify({
       url: `/api/download/${filename}`,

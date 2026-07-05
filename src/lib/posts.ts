@@ -1,11 +1,16 @@
-// src/lib/posts.ts — 文章 CRUD（Netlify Blobs 兼容）
+// src/lib/posts.ts — 文章 CRUD（Netlify Blobs 持久化）
 import fs from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
+import { getStore } from '@netlify/blobs';
 import { readData, writeData } from './dataStore';
 
 const DATA_NAME = 'posts';
+const CONTENT_STORE = 'yibuchuanyang-content';
 const CONTENT_DIR = path.resolve('src/content/posts');
+
+// 是否在 Netlify 环境
+const isNetlify = !!(process.env.NETLIFY || process.env.NETLIFY_LOCAL);
 
 export interface PostMeta {
   id: string;
@@ -21,6 +26,7 @@ export interface Post extends PostMeta {
   content: string;
 }
 
+// 本地文件系统路径（开发环境）
 function tmpContentFile(slug: string): string {
   const dir = path.join(os.tmpdir(), 'yibuchuanyang-posts');
   fs.mkdirSync(dir, { recursive: true });
@@ -29,10 +35,15 @@ function tmpContentFile(slug: string): string {
 
 /** 读取文章正文 */
 async function readContent(slug: string): Promise<string | null> {
-  // 1. 尝试 /tmp 缓存
+  if (isNetlify) {
+    try {
+      const store = getStore(CONTENT_STORE);
+      return await store.get(`post-${slug}`, { type: 'text' });
+    } catch { return null; }
+  }
+  // 本地开发：尝试 /tmp 缓存 → 项目 MD 文件
   const tmpFile = tmpContentFile(slug);
   if (fs.existsSync(tmpFile)) return fs.readFileSync(tmpFile, 'utf-8');
-  // 2. 尝试本地 MD 文件
   const mdPath = path.join(CONTENT_DIR, `${slug}.md`);
   if (fs.existsSync(mdPath)) return fs.readFileSync(mdPath, 'utf-8');
   return null;
@@ -40,13 +51,23 @@ async function readContent(slug: string): Promise<string | null> {
 
 /** 写入文章正文 */
 async function writeContent(slug: string, content: string): Promise<void> {
-  // 写入 /tmp（所有环境，唯一可写的地方）
+  if (isNetlify) {
+    const store = getStore(CONTENT_STORE);
+    await store.set(`post-${slug}`, content);
+    return;
+  }
+  // 本地开发写 /tmp
   fs.mkdirSync(path.dirname(tmpContentFile(slug)), { recursive: true });
   fs.writeFileSync(tmpContentFile(slug), content, 'utf-8');
 }
 
 /** 删除文章正文 */
 async function deleteContent(slug: string): Promise<void> {
+  if (isNetlify) {
+    const store = getStore(CONTENT_STORE);
+    await store.delete(`post-${slug}`);
+    return;
+  }
   const f = tmpContentFile(slug);
   if (fs.existsSync(f)) fs.unlinkSync(f);
 }

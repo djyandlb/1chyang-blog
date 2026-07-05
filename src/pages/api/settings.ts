@@ -16,7 +16,7 @@ export async function PUT({ request }: APIContext) {
   try {
     const body = await request.json();
     const { about, subtitle } = body;
-    const updated = updateSettings({ about, subtitle });
+    const updated = await updateSettings({ about, subtitle });
     return new Response(JSON.stringify(updated), {
       status: 200,
       headers: { 'Content-Type': 'application/json' },

@@ -19,7 +19,7 @@ if (editId) {
   const found = all.find((p) => p.id === editId);
   if (found) {
     const { getPostBySlug } = await import('../../lib/posts');
-    post = getPostBySlug(found.slug);
+    post = await getPostBySlug(found.slug);
   }
 }
 ---

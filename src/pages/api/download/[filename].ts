@@ -10,7 +10,7 @@ export async function GET({ params }: APIContext) {
     return new Response('Missing filename', { status: 400 });
   }
 
-  const file = getFile(filename);
+  const file = await getFile(filename);
   if (!file) {
     return new Response('File not found', { status: 404 });
   }

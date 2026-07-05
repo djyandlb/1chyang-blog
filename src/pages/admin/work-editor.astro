@@ -14,7 +14,7 @@ const editId = url.searchParams.get('id');
 let work = null;
 if (editId) {
   const { getWorkById } = await import('../../lib/works');
-  work = getWorkById(editId);
+  work = await getWorkById(editId);
 }
 ---
 
