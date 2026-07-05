@@ -1,11 +1,12 @@
 // src/lib/posts.ts — 文章 CRUD（Netlify Blobs 兼容）
 import fs from 'node:fs';
 import path from 'node:path';
+import os from 'node:os';
 import { readData, writeData } from './dataStore';
 
 const DATA_NAME = 'posts';
-const isNetlify = !!process.env.NETLIFY;
 const CONTENT_DIR = path.resolve('src/content/posts');
+const isNetlify = !!process.env.NETLIFY;
 
 export interface PostMeta {
   id: string;
@@ -21,44 +22,67 @@ export interface Post extends PostMeta {
   content: string;
 }
 
-/** 读取文章正文：Netlify 上从 Blob 读，本地从 MD 文件读 */
+function tmpContentFile(slug: string): string {
+  const dir = path.join(os.tmpdir(), 'yibuchuanyang-posts');
+  fs.mkdirSync(dir, { recursive: true });
+  return path.join(dir, `${slug}.md`);
+}
+
+/** 读取文章正文 */
 async function readContent(slug: string): Promise<string | null> {
-  if (isNetlify) {
-    try {
-      const { getStore } = await import('@netlify/blobs');
-      const store = getStore('blog-posts');
-      return await store.get(slug, { type: 'text' });
-    } catch { return null; }
-  }
+  // 1. 尝试 Netlify Blobs
+  try {
+    const { getStore } = await import('@netlify/blobs');
+    const store = getStore('blog-posts');
+    const content = await store.get(slug, { type: 'text' });
+    if (content !== null) return content;
+  } catch { /* ignore */ }
+
+  // 2. 尝试 /tmp 缓存
+  const tmpFile = tmpContentFile(slug);
+  if (fs.existsSync(tmpFile)) return fs.readFileSync(tmpFile, 'utf-8');
+
+  // 3. 尝试本地 MD 文件
   const mdPath = path.join(CONTENT_DIR, `${slug}.md`);
-  if (!fs.existsSync(mdPath)) return null;
-  return fs.readFileSync(mdPath, 'utf-8');
+  if (fs.existsSync(mdPath)) return fs.readFileSync(mdPath, 'utf-8');
+
+  return null;
 }
 
 /** 写入文章正文 */
 async function writeContent(slug: string, content: string): Promise<void> {
-  if (isNetlify) {
+  // 1. 尝试 Netlify Blobs
+  try {
     const { getStore } = await import('@netlify/blobs');
     const store = getStore('blog-posts');
     await store.set(slug, content);
-    return;
+  } catch { /* ignore */ }
+
+  // 2. 写入 /tmp 缓存
+  fs.writeFileSync(tmpContentFile(slug), content, 'utf-8');
+
+  // 3. 本地开发也写入项目 MD 文件
+  if (!isNetlify) {
+    fs.mkdirSync(CONTENT_DIR, { recursive: true });
+    fs.writeFileSync(path.join(CONTENT_DIR, `${slug}.md`), content, 'utf-8');
   }
-  fs.mkdirSync(CONTENT_DIR, { recursive: true });
-  fs.writeFileSync(path.join(CONTENT_DIR, `${slug}.md`), content, 'utf-8');
 }
 
 /** 删除文章正文 */
 async function deleteContent(slug: string): Promise<void> {
-  if (isNetlify) {
-    try {
-      const { getStore } = await import('@netlify/blobs');
-      const store = getStore('blog-posts');
-      await store.delete(slug);
-    } catch { /* ignore */ }
-    return;
+  try {
+    const { getStore } = await import('@netlify/blobs');
+    const store = getStore('blog-posts');
+    await store.delete(slug);
+  } catch { /* ignore */ }
+
+  const tmpFile = tmpContentFile(slug);
+  if (fs.existsSync(tmpFile)) fs.unlinkSync(tmpFile);
+
+  if (!isNetlify) {
+    const mdPath = path.join(CONTENT_DIR, `${slug}.md`);
+    if (fs.existsSync(mdPath)) fs.unlinkSync(mdPath);
   }
-  const mdPath = path.join(CONTENT_DIR, `${slug}.md`);
-  if (fs.existsSync(mdPath)) fs.unlinkSync(mdPath);
 }
 
 /** 获取所有已发布文章 */
