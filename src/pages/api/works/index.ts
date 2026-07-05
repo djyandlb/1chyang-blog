@@ -5,7 +5,7 @@ import { getAllWorks, createWork, type WorkMeta } from '../../../lib/works';
 export const prerender = false;
 
 export async function GET() {
-  const works = getAllWorks();
+  const works = await getAllWorks();
   return new Response(JSON.stringify(works), {
     status: 200,
     headers: { 'Content-Type': 'application/json' },
@@ -24,7 +24,7 @@ export async function POST({ request }: APIContext) {
       });
     }
 
-    const work = createWork({
+    const work = await createWork({
       title,
       description: description || '',
       url: url || '',

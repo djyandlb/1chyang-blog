@@ -9,7 +9,7 @@ import { getAllPostsAdmin } from '../../lib/posts';
 
 export const prerender = false;
 
-const posts = getAllPostsAdmin();
+const posts = await getAllPostsAdmin();
 ---
 
 <AdminLayout>

@@ -13,7 +13,7 @@ export async function GET({ params }: APIContext) {
     });
   }
 
-  const work = getWorkById(id);
+  const work = await getWorkById(id);
   if (!work) {
     return new Response(JSON.stringify({ error: '作品不存在' }), {
       status: 404,
@@ -39,7 +39,7 @@ export async function PUT({ params, request }: APIContext) {
     const body = await request.json();
     const { title, description, url, icon, tags } = body;
 
-    const updated = updateWork(id, { title, description, url, icon, tags });
+    const updated = await updateWork(id, { title, description, url, icon, tags });
 
     if (!updated) {
       return new Response(JSON.stringify({ error: '作品不存在' }), {
@@ -69,7 +69,7 @@ export async function DELETE({ params }: APIContext) {
     });
   }
 
-  const success = deleteWork(id);
+  const success = await deleteWork(id);
   if (!success) {
     return new Response(JSON.stringify({ error: '作品不存在' }), {
       status: 404,

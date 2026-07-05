@@ -1,9 +1,7 @@
-// src/lib/friends.ts — 友链 CRUD
-import fs from 'node:fs';
-import path from 'node:path';
+// src/lib/friends.ts — 友链 CRUD（支持 Netlify Blobs）
+import { readData, writeData } from './dataStore';
 
-const DATA_DIR = path.resolve('data');
-const FRIENDS_FILE = path.join(DATA_DIR, 'friends.json');
+const DATA_NAME = 'friends';
 
 export interface Friend {
   id: string;
@@ -12,43 +10,37 @@ export interface Friend {
   description: string;
 }
 
-function readFriends(): Friend[] {
-  if (!fs.existsSync(FRIENDS_FILE)) return [];
-  return JSON.parse(fs.readFileSync(FRIENDS_FILE, 'utf-8'));
+/** 获取所有友链 */
+export async function getAllFriends(): Promise<Friend[]> {
+  return readData<Friend>(DATA_NAME);
 }
 
-function writeFriends(friends: Friend[]): void {
-  fs.mkdirSync(DATA_DIR, { recursive: true });
-  fs.writeFileSync(FRIENDS_FILE, JSON.stringify(friends, null, 2), 'utf-8');
-}
-
-export function getAllFriends(): Friend[] {
-  return readFriends();
-}
-
-export function createFriend(data: Omit<Friend, 'id'>): Friend {
-  const friends = readFriends();
+/** 创建友链 */
+export async function createFriend(data: Omit<Friend, 'id'>): Promise<Friend> {
+  const friends = await readData<Friend>(DATA_NAME);
   const id = String(Date.now());
   const friend: Friend = { ...data, id };
   friends.push(friend);
-  writeFriends(friends);
+  await writeData(DATA_NAME, friends);
   return friend;
 }
 
-export function updateFriend(id: string, data: Partial<Friend>): Friend | null {
-  const friends = readFriends();
+/** 更新友链 */
+export async function updateFriend(id: string, data: Partial<Friend>): Promise<Friend | null> {
+  const friends = await readData<Friend>(DATA_NAME);
   const index = friends.findIndex((f) => f.id === id);
   if (index === -1) return null;
   friends[index] = { ...friends[index], ...data };
-  writeFriends(friends);
+  await writeData(DATA_NAME, friends);
   return friends[index];
 }
 
-export function deleteFriend(id: string): boolean {
-  const friends = readFriends();
+/** 删除友链 */
+export async function deleteFriend(id: string): Promise<boolean> {
+  const friends = await readData<Friend>(DATA_NAME);
   const index = friends.findIndex((f) => f.id === id);
   if (index === -1) return false;
   friends.splice(index, 1);
-  writeFriends(friends);
+  await writeData(DATA_NAME, friends);
   return true;
 }

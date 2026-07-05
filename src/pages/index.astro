@@ -7,9 +7,11 @@ import { getAllPosts } from '../lib/posts';
 import { getAllWorks } from '../lib/works';
 import { getSettings } from '../lib/settings';
 
-const posts = getAllPosts().slice(0, 6);
-const works = getAllWorks().slice(0, 3);
-const settings = getSettings();
+const allPosts = await getAllPosts();
+const posts = allPosts.slice(0, 6);
+const allWorks = await getAllWorks();
+const works = allWorks.slice(0, 3);
+const settings = await getSettings();
 ---
 
 <BlogLayout title="首页">

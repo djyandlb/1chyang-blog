@@ -5,7 +5,7 @@ import { getSettings, updateSettings } from '../../lib/settings';
 export const prerender = false;
 
 export async function GET() {
-  const settings = getSettings();
+  const settings = await getSettings();
   return new Response(JSON.stringify(settings), {
     status: 200,
     headers: { 'Content-Type': 'application/json' },

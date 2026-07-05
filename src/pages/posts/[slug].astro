@@ -8,12 +8,12 @@ import { marked } from 'marked';
 
 export async function getStaticPaths() {
   const { getAllPosts } = await import('../../lib/posts');
-  const posts = getAllPosts();
+  const posts = await getAllPosts();
   return posts.map((p) => ({ params: { slug: p.slug } }));
 }
 
 const { slug } = Astro.params;
-const post = getPostBySlug(slug!);
+const post = await getPostBySlug(slug!);
 
 if (!post) {
   return Astro.redirect('/404');

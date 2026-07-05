@@ -21,7 +21,7 @@ export async function POST({ request }: APIContext) {
         headers: { 'Content-Type': 'application/json' },
       });
     }
-    const friend = createFriend({ name, url, description: description || '' });
+    const friend = await createFriend({ name, url, description: description || '' });
     return new Response(JSON.stringify(friend), {
       status: 201,
       headers: { 'Content-Type': 'application/json' },

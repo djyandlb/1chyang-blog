@@ -5,7 +5,7 @@ import GlassCard from '../components/glass/GlassCard.astro';
 import { getSettings } from '../lib/settings';
 import { marked } from 'marked';
 
-const settings = getSettings();
+const settings = await getSettings();
 const aboutHtml = marked.parse(settings.about || '') as string;
 ---
 

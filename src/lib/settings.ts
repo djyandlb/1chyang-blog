@@ -1,8 +1,7 @@
-// src/lib/settings.ts — 站点设置 CRUD
-import fs from 'node:fs';
-import path from 'node:path';
+// src/lib/settings.ts — 站点设置（支持 Netlify Blobs）
+import { readData, writeData } from './dataStore';
 
-const SETTINGS_FILE = path.resolve('data/settings.json');
+const DATA_NAME = 'settings';
 
 export interface SiteSettings {
   about: string;
@@ -16,19 +15,24 @@ function defaultSettings(): SiteSettings {
   };
 }
 
-export function getSettings(): SiteSettings {
-  if (!fs.existsSync(SETTINGS_FILE)) return defaultSettings();
-  try {
-    return { ...defaultSettings(), ...JSON.parse(fs.readFileSync(SETTINGS_FILE, 'utf-8')) };
-  } catch {
-    return defaultSettings();
+/** 获取设置 */
+export async function getSettings(): Promise<SiteSettings> {
+  const data = await readData<SiteSettings>(DATA_NAME);
+  // settings 不是数组，是单对象
+  if (Array.isArray(data) && data.length > 0) {
+    return { ...defaultSettings(), ...(data[0] as any) };
   }
+  if (!Array.isArray(data) && data !== null && typeof data === 'object') {
+    return { ...defaultSettings(), ...(data as any) };
+  }
+  return defaultSettings();
 }
 
-export function updateSettings(data: Partial<SiteSettings>): SiteSettings {
-  const current = getSettings();
+/** 更新设置 */
+export async function updateSettings(data: Partial<SiteSettings>): Promise<SiteSettings> {
+  const current = await getSettings();
   const updated = { ...current, ...data };
-  fs.mkdirSync(path.dirname(SETTINGS_FILE), { recursive: true });
-  fs.writeFileSync(SETTINGS_FILE, JSON.stringify(updated, null, 2), 'utf-8');
+  // 存储为数组格式（兼容 dataStore 的数组读写）
+  await writeData(DATA_NAME, [updated]);
   return updated;
 }

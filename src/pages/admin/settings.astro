@@ -8,7 +8,7 @@ import { getSettings } from '../../lib/settings';
 
 export const prerender = false;
 
-const settings = getSettings();
+const settings = await getSettings();
 ---
 
 <AdminLayout>

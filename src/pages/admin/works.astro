@@ -7,7 +7,7 @@ import { getAllWorks } from '../../lib/works';
 
 export const prerender = false;
 
-const works = getAllWorks();
+const works = await getAllWorks();
 ---
 
 <AdminLayout>

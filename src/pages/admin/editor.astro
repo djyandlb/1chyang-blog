@@ -15,7 +15,7 @@ const editId = url.searchParams.get('id');
 let post: { id?: string; title?: string; slug?: string; date?: string; tags?: string[]; excerpt?: string; content?: string; published?: boolean } | null = null;
 
 if (editId) {
-  const all = getAllPostsAdmin();
+  const all = await getAllPostsAdmin();
   const found = all.find((p) => p.id === editId);
   if (found) {
     const { getPostBySlug } = await import('../../lib/posts');

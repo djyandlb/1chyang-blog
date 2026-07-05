@@ -14,7 +14,7 @@ export async function GET({ params }: APIContext) {
     });
   }
 
-  const post = getPostBySlug(id);
+  const post = await getPostBySlug(id);
   if (!post) {
     return new Response(JSON.stringify({ error: '文章不存在' }), {
       status: 404,
@@ -40,7 +40,7 @@ export async function PUT({ params, request }: APIContext) {
     const body = await request.json();
     const { title, slug, date, tags, excerpt, published, content } = body;
 
-    const updated = updatePost(id, { title, slug, date, tags, excerpt, published }, content);
+    const updated = await updatePost(id, { title, slug, date, tags, excerpt, published }, content);
 
     if (!updated) {
       return new Response(JSON.stringify({ error: '文章不存在' }), {
@@ -70,7 +70,7 @@ export async function DELETE({ params }: APIContext) {
     });
   }
 
-  const success = deletePost(id);
+  const success = await deletePost(id);
   if (!success) {
     return new Response(JSON.stringify({ error: '文章不存在' }), {
       status: 404,

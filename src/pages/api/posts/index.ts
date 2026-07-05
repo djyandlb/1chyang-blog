@@ -36,7 +36,7 @@ export async function POST({ request }: APIContext) {
       published: published ?? true,
     };
 
-    const post = createPost(meta, content);
+    const post = await createPost(meta, content);
 
     return new Response(JSON.stringify(post), {
       status: 201,

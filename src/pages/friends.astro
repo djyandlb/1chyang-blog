@@ -4,7 +4,7 @@ import BlogLayout from '../layouts/BlogLayout.astro';
 import GlassCard from '../components/glass/GlassCard.astro';
 import { getAllFriends } from '../lib/friends';
 
-const friends = getAllFriends();
+const friends = await getAllFriends();
 ---
 
 <BlogLayout title="友链">
