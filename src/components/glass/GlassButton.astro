@@ -10,6 +10,13 @@ export interface Props {
 
 const { variant = 'ghost', size = 'md', href, type = 'button', class: extraClass = '' } = Astro.props;
 
+// 自动补全外链协议
+const finalHref = href && !href.startsWith('http://') && !href.startsWith('https://') && !href.startsWith('/') && !href.startsWith('#')
+  ? `https://${href}`
+  : href;
+
+const isExternal = finalHref && (finalHref.startsWith('http://') || finalHref.startsWith('https://'));
+
 const baseClass = 'inline-flex items-center gap-2 rounded-[14px] border font-medium transition-all duration-300 cursor-pointer no-underline backdrop-blur-md';
 const sizeClass = { sm: 'px-3 py-1.5 text-xs', md: 'px-5 py-2.5 text-sm', lg: 'px-7 py-3 text-base' }[size];
 const variantClass = variant === 'primary'
@@ -20,8 +27,8 @@ const style = 'font-family: \'Microsoft YaHei\', \'PingFang SC\', sans-serif;';
 const fullClass = `${baseClass} ${sizeClass} ${variantClass} ${extraClass}`;
 ---
 
-{href ? (
-  <a href={href} class={fullClass} style={style}><slot /></a>
+{finalHref ? (
+  <a href={finalHref} target={isExternal ? '_blank' : undefined} rel={isExternal ? 'noopener noreferrer' : undefined} class={fullClass} style={style}><slot /></a>
 ) : (
   <button type={type} class={fullClass} style={style}><slot /></button>
 )}
