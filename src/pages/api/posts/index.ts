@@ -7,7 +7,7 @@ export const prerender = false;
 export async function GET({ request }: APIContext) {
   const url = new URL(request.url);
   const admin = url.searchParams.get('admin') === 'true';
-  const posts = admin ? getAllPostsAdmin() : getAllPosts();
+  const posts = admin ? await getAllPostsAdmin() : await getAllPosts();
 
   return new Response(JSON.stringify(posts), {
     status: 200,
@@ -42,8 +42,9 @@ export async function POST({ request }: APIContext) {
       status: 201,
       headers: { 'Content-Type': 'application/json' },
     });
-  } catch {
-    return new Response(JSON.stringify({ error: '创建失败' }), {
+  } catch (err: any) {
+    console.error('[API] POST /api/posts 错误:', err?.message || err?.stack || err);
+    return new Response(JSON.stringify({ error: err?.message || '创建失败' }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' },
     });
