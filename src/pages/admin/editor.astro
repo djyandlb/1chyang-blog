@@ -211,7 +211,7 @@ if (editId) {
     }
 
     // 表单提交
-    const form = document.getElementById('editor-form');
+    const form = /** @type {HTMLFormElement} */ (document.getElementById('editor-form'));
     if (form) {
       form.addEventListener('submit', async (e) => {
         e.preventDefault();
