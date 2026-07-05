@@ -1,7 +1,6 @@
-// src/pages/api/upload.ts — 文件上传（任意类型）
+// src/pages/api/upload.ts — 文件上传（JSON base64 存储，兼容 Netlify）
 import type { APIContext } from 'astro';
-import fs from 'node:fs';
-import path from 'node:path';
+import { saveFile } from '../../lib/fileStore';
 
 export const prerender = false;
 
@@ -17,25 +16,22 @@ export async function POST({ request }: APIContext) {
       });
     }
 
-    // 校验文件大小（最大 100MB）
-    if (file.size > 100 * 1024 * 1024) {
-      return new Response(JSON.stringify({ error: '文件大小不能超过 100MB' }), {
+    // 最大 50MB（base64 存储限制）
+    if (file.size > 50 * 1024 * 1024) {
+      return new Response(JSON.stringify({ error: '文件大小不能超过 50MB' }), {
         status: 400,
         headers: { 'Content-Type': 'application/json' },
       });
     }
 
-    // 生成唯一文件名，保留原始拓展名
     const ext = file.name.split('.').pop() || 'file';
     const filename = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
-    const uploadDir = path.resolve('public/uploads');
-    fs.mkdirSync(uploadDir, { recursive: true });
-
     const buffer = Buffer.from(await file.arrayBuffer());
-    fs.writeFileSync(path.join(uploadDir, filename), buffer);
+
+    saveFile(filename, file.name, buffer, file.type || 'application/octet-stream');
 
     return new Response(JSON.stringify({
-      url: `/uploads/${filename}`,
+      url: `/api/download/${filename}`,
       filename,
       originalName: file.name,
       size: file.size,
@@ -43,7 +39,8 @@ export async function POST({ request }: APIContext) {
       status: 200,
       headers: { 'Content-Type': 'application/json' },
     });
-  } catch {
+  } catch (err) {
+    console.error('Upload error:', err);
     return new Response(JSON.stringify({ error: '上传失败' }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' },
