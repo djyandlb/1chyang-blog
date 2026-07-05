@@ -30,38 +30,20 @@ function tmpContentFile(slug: string): string {
 
 /** 读取文章正文 */
 async function readContent(slug: string): Promise<string | null> {
-  // 1. 尝试 Netlify Blobs
-  try {
-    const { getStore } = await import('@netlify/blobs');
-    const store = getStore('blog-posts');
-    const content = await store.get(slug, { type: 'text' });
-    if (content !== null) return content;
-  } catch { /* ignore */ }
-
-  // 2. 尝试 /tmp 缓存
+  // 1. 尝试 /tmp 缓存
   const tmpFile = tmpContentFile(slug);
   if (fs.existsSync(tmpFile)) return fs.readFileSync(tmpFile, 'utf-8');
-
-  // 3. 尝试本地 MD 文件
+  // 2. 尝试本地 MD 文件
   const mdPath = path.join(CONTENT_DIR, `${slug}.md`);
   if (fs.existsSync(mdPath)) return fs.readFileSync(mdPath, 'utf-8');
-
   return null;
 }
 
 /** 写入文章正文 */
 async function writeContent(slug: string, content: string): Promise<void> {
-  // 1. 尝试 Netlify Blobs
-  try {
-    const { getStore } = await import('@netlify/blobs');
-    const store = getStore('blog-posts');
-    await store.set(slug, content);
-  } catch { /* ignore */ }
-
-  // 2. 写入 /tmp 缓存
+  // 写入 /tmp 缓存（所有环境）
   fs.writeFileSync(tmpContentFile(slug), content, 'utf-8');
-
-  // 3. 本地开发也写入项目 MD 文件
+  // 本地开发也写项目 MD 文件
   if (!isNetlify) {
     fs.mkdirSync(CONTENT_DIR, { recursive: true });
     fs.writeFileSync(path.join(CONTENT_DIR, `${slug}.md`), content, 'utf-8');
@@ -70,15 +52,8 @@ async function writeContent(slug: string, content: string): Promise<void> {
 
 /** 删除文章正文 */
 async function deleteContent(slug: string): Promise<void> {
-  try {
-    const { getStore } = await import('@netlify/blobs');
-    const store = getStore('blog-posts');
-    await store.delete(slug);
-  } catch { /* ignore */ }
-
   const tmpFile = tmpContentFile(slug);
   if (fs.existsSync(tmpFile)) fs.unlinkSync(tmpFile);
-
   if (!isNetlify) {
     const mdPath = path.join(CONTENT_DIR, `${slug}.md`);
     if (fs.existsSync(mdPath)) fs.unlinkSync(mdPath);
