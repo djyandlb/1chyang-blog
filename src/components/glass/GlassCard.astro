@@ -1,0 +1,26 @@
+---
+// src/components/glass/GlassCard.astro — 基础磨砂玻璃卡片
+export interface Props {
+  hover?: boolean;
+  padding?: 'small' | 'medium' | 'large';
+  class?: string;
+}
+
+const { hover = false, padding = 'medium', class: extraClass = '' } = Astro.props;
+
+const paddingMap = {
+  small: 'p-4',
+  medium: 'p-6',
+  large: 'p-8',
+};
+---
+
+<div
+  class={`glass ${hover ? 'glass-hover' : ''} ${paddingMap[padding]} relative overflow-hidden ${extraClass}`}
+>
+  <!-- 顶部光泽条 -->
+  <div class="absolute inset-0 bg-gradient-to-br from-white/4 to-transparent rounded-[inherit] pointer-events-none"></div>
+  <div class="relative z-10">
+    <slot />
+  </div>
+</div>

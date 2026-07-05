@@ -1,0 +1,98 @@
+---
+// src/pages/admin/login.astro — 后台登录页
+import '../../styles/global.css';
+
+export const prerender = false;
+---
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>登录 - 一步穿杨</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lxgw-wenkai-webfont@1.7.0/style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&family=Noto+Serif+SC:wght@400;700;900&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <div class="bg-atmosphere"></div>
+
+  <div class="relative z-10 min-h-screen flex items-center justify-center">
+    <div class="glass p-8 max-w-[400px] w-full mx-4">
+      <h1
+        class="text-2xl font-black text-center mb-8 text-gradient"
+        style="font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif; font-weight: 900;"
+      >
+        一步穿杨
+      </h1>
+
+      <form id="login-form" class="flex flex-col gap-5">
+        <div class="flex flex-col gap-2">
+          <label for="username" class="text-sm text-[var(--text-secondary)]" style="font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;">用户名</label>
+          <input id="username" name="username" type="text" required placeholder="输入用户名"
+            class="glass px-4 py-3 text-[var(--text-primary)] placeholder:text-[var(--text-muted)] outline-none transition-all duration-250 focus:border-[var(--gold)]/50"
+            style="font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif; border-radius: 14px;" />
+        </div>
+
+        <div class="flex flex-col gap-2">
+          <label for="password" class="text-sm text-[var(--text-secondary)]" style="font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;">密码</label>
+          <input id="password" name="password" type="password" required placeholder="输入密码"
+            class="glass px-4 py-3 text-[var(--text-primary)] placeholder:text-[var(--text-muted)] outline-none transition-all duration-250 focus:border-[var(--gold)]/50"
+            style="font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif; border-radius: 14px;" />
+        </div>
+
+        <p id="error-msg" class="text-xs text-[var(--rose)] text-center hidden"></p>
+
+        <button type="submit"
+          class="inline-flex items-center justify-center gap-2 rounded-[14px] border font-medium transition-all duration-300 cursor-pointer px-7 py-3 text-base bg-[var(--gold)]/15 border-[var(--gold)]/35 text-[var(--text-primary)] hover:bg-[var(--gold)]/25 mt-2"
+          style="font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;">
+          登录
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const form = document.getElementById('login-form')!;
+    const errorMsg = document.getElementById('error-msg')!;
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      errorMsg.classList.add('hidden');
+
+      const username = (document.getElementById('username') as HTMLInputElement).value;
+      const password = (document.getElementById('password') as HTMLInputElement).value;
+
+      try {
+        const res = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password }),
+        });
+
+        if (res.ok) {
+          window.location.href = '/admin';
+        } else {
+          const data = await res.json();
+          errorMsg.textContent = data.error || '登录失败';
+          errorMsg.classList.remove('hidden');
+        }
+      } catch {
+        errorMsg.textContent = '网络错误';
+        errorMsg.classList.remove('hidden');
+      }
+    });
+  </script>
+
+  <style>
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-6px); }
+      50% { transform: translateX(6px); }
+      75% { transform: translateX(-4px); }
+    }
+  </style>
+</body>
+</html>

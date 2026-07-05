@@ -1,0 +1,36 @@
+---
+// src/pages/tags/[tag].astro — 标签聚合页
+import BlogLayout from '../../layouts/BlogLayout.astro';
+import ArticleCard from '../../components/blog/ArticleCard.astro';
+import { getAllPosts } from '../../lib/posts';
+
+export async function getStaticPaths() {
+  const posts = getAllPosts();
+  const tagSet = new Set<string>();
+  posts.forEach((p) => p.tags.forEach((t) => tagSet.add(t)));
+  return Array.from(tagSet).map((tag) => ({ params: { tag } }));
+}
+
+const { tag } = Astro.params;
+const posts = getAllPosts().filter((p) => p.tags.includes(tag!));
+---
+
+<BlogLayout title={`标签：${tag}`}>
+
+  <div class="mt-12 mb-8">
+    <h1 class="text-2xl font-bold" style="font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif; font-weight: 900;">
+      标签：<span class="text-gradient">{tag}</span>
+    </h1>
+    <p class="text-sm text-[var(--text-muted)] mt-2">共 {posts.length} 篇文章</p>
+  </div>
+
+  <div class="grid gap-6" style="grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));">
+    {posts.map((post) => (
+      <ArticleCard post={post} />
+    ))}
+  </div>
+
+  {posts.length === 0 && (
+    <div class="glass p-12 text-center text-[var(--text-muted)]">该标签下暂无文章</div>
+  )}
+</BlogLayout>

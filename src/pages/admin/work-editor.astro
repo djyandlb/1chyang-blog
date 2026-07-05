@@ -1,0 +1,162 @@
+---
+// src/pages/admin/work-editor.astro — 作品编辑器
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import GlassCard from '../../components/glass/GlassCard.astro';
+import GlassInput from '../../components/glass/GlassInput.astro';
+import GlassButton from '../../components/glass/GlassButton.astro';
+import { getAllWorks } from '../../lib/works';
+
+export const prerender = false;
+
+const url = new URL(Astro.request.url);
+const editId = url.searchParams.get('id');
+
+let work = null;
+if (editId) {
+  const { getWorkById } = await import('../../lib/works');
+  work = getWorkById(editId);
+}
+---
+
+<AdminLayout>
+  <h1 class="text-2xl font-bold mb-8" style="font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif; font-weight: 900;">
+    {work ? '编辑作品' : '新建作品'}
+  </h1>
+
+  <div class="max-w-[700px]">
+    <GlassCard padding="large">
+      <form id="work-form" class="flex flex-col gap-4">
+        <div class="flex gap-4">
+          <div class="flex-1">
+            <GlassInput label="作品图标（Emoji）" name="icon" type="text" value={work?.icon || '📦'} placeholder="📦" />
+          </div>
+          <div class="flex-[3]">
+            <GlassInput label="作品标题" name="title" type="text" required value={work?.title || ''} placeholder="作品名称" />
+          </div>
+        </div>
+        <GlassInput label="外链 URL" name="url" type="text" value={work?.url || ''} placeholder="https://github.com/你的项目" />
+        <GlassInput label="标签（逗号分隔）" name="tags" type="text" value={work?.tags?.join(', ') || ''} placeholder="开源, 前端, AI" />
+        <GlassInput label="描述" name="description" type="textarea" value={work?.description || ''} placeholder="介绍一下这个作品…" class="min-h-[150px]" />
+
+        <!-- 文件上传（供下载） -->
+        <div class="flex flex-col gap-2">
+          <label class="text-sm text-[var(--text-secondary)]" style="font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;">
+            下载文件（可选，任意类型）
+          </label>
+          <div id="file-drop-zone" class="glass border-dashed border-[var(--gold)]/30 text-center py-6 cursor-pointer transition-colors hover:border-[var(--gold)]/60" style="border-radius: 14px;">
+            <p id="file-status" class="text-sm text-[var(--text-muted)]">
+              {work?.fileName ? `📎 ${work.fileName}` : '📁 点击或拖拽上传文件'}
+            </p>
+            <input type="file" id="file-input" class="hidden" />
+            <input type="hidden" name="fileUrl" value={work?.fileUrl || ''} />
+            <input type="hidden" name="fileName" value={work?.fileName || ''} />
+          </div>
+          {work?.fileName && (
+            <p class="text-xs text-[var(--text-muted)] mt-1">
+              已有文件：<a href={work.fileUrl} class="text-[var(--gold)] no-underline hover:text-[var(--gold-light)]" target="_blank">{work.fileName}</a>
+            </p>
+          )}
+        </div>
+
+        <input type="hidden" name="id" value={work?.id || ''} />
+
+        <div class="flex gap-3 mt-2">
+          <GlassButton type="submit" variant="primary" size="md">
+            💾 {work ? '更新' : '创建'}
+          </GlassButton>
+          <a href="/admin/works" class="glass px-5 py-2.5 rounded-[14px] text-sm no-underline text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors">
+            取消
+          </a>
+        </div>
+      </form>
+    </GlassCard>
+  </div>
+
+  <script>
+    // 文件上传
+    const dropZone = document.getElementById('file-drop-zone');
+    const fileInput = document.getElementById('file-input');
+    const fileStatus = document.getElementById('file-status');
+    const fileUrlInput = document.querySelector('[name="fileUrl"]');
+    const fileNameInput = document.querySelector('[name="fileName"]');
+
+    if (dropZone && fileInput) {
+      dropZone.addEventListener('click', () => fileInput.click());
+
+      dropZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropZone.classList.add('border-[var(--gold)]/60');
+      });
+      dropZone.addEventListener('dragleave', () => {
+        dropZone.classList.remove('border-[var(--gold)]/60');
+      });
+      dropZone.addEventListener('drop', async (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('border-[var(--gold)]/60');
+        const file = e.dataTransfer?.files?.[0];
+        if (file) await uploadFile(file);
+      });
+
+      fileInput.addEventListener('change', async () => {
+        const file = fileInput.files?.[0];
+        if (file) await uploadFile(file);
+      });
+    }
+
+    async function uploadFile(file) {
+      if (fileStatus) fileStatus.textContent = '⏳ 上传中…';
+      const formData = new FormData();
+      formData.append('file', file);
+      try {
+        const res = await fetch('/api/upload', { method: 'POST', body: formData });
+        const data = await res.json();
+        if (data.url) {
+          if (fileUrlInput) fileUrlInput.value = data.url;
+          if (fileNameInput) fileNameInput.value = data.originalName || data.filename;
+          if (fileStatus) fileStatus.textContent = `📎 ${data.originalName || data.filename}`;
+        } else {
+          alert('上传失败');
+          if (fileStatus) fileStatus.textContent = '📁 点击或拖拽上传文件';
+        }
+      } catch {
+        alert('上传失败');
+        if (fileStatus) fileStatus.textContent = '📁 点击或拖拽上传文件';
+      }
+    }
+
+    const form = document.getElementById('work-form');
+    if (form) {
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const formData = new FormData(form);
+        const id = formData.get('id');
+        const data = {
+          icon: formData.get('icon'),
+          title: formData.get('title'),
+          url: formData.get('url'),
+          tags: String(formData.get('tags') || '').split(',').map((t) => t.trim()).filter(Boolean),
+          description: formData.get('description'),
+          fileUrl: formData.get('fileUrl'),
+          fileName: formData.get('fileName'),
+        };
+
+        const method = id ? 'PUT' : 'POST';
+        const url = id ? `/api/works/${id}` : '/api/works';
+
+        try {
+          const res = await fetch(url, {
+            method,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data),
+          });
+          if (res.ok) {
+            window.location.href = '/admin/works';
+          } else {
+            const err = await res.json();
+            alert(err.error || '保存失败');
+          }
+        } catch { alert('网络错误'); }
+      });
+    }
+  </script>
+</AdminLayout>

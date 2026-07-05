@@ -1,0 +1,106 @@
+---
+// src/pages/admin/works.astro — 后台作品管理
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import GlassCard from '../../components/glass/GlassCard.astro';
+import GlassButton from '../../components/glass/GlassButton.astro';
+import { getAllWorks } from '../../lib/works';
+
+export const prerender = false;
+
+const works = getAllWorks();
+---
+
+<AdminLayout>
+  <div class="flex items-center justify-between mb-8">
+    <h1 class="text-2xl font-bold" style="font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif; font-weight: 900;">
+      ✨ 作品管理
+    </h1>
+    <GlassButton variant="primary" href="/admin/work-editor">➕ 新建作品</GlassButton>
+  </div>
+
+  <div class="space-y-3">
+    {works.length === 0 ? (
+      <GlassCard padding="large" class="text-center text-[var(--text-muted)]">
+        还没有作品，新建一个吧～
+      </GlassCard>
+    ) : (
+      works.map((work) => (
+        <GlassCard padding="medium">
+          <div class="flex items-center justify-between gap-4 flex-wrap">
+            <div class="flex items-center gap-4 flex-1 min-w-0">
+              <div class="text-3xl">{work.icon}</div>
+              <div class="flex-1 min-w-0">
+                <h3 class="text-lg font-bold text-[var(--text-primary)]">{work.title}</h3>
+                <p class="text-sm text-[var(--text-secondary)] mt-1 truncate">{work.description}</p>
+                {work.tags && work.tags.length > 0 && (
+                  <p class="text-xs text-[var(--text-muted)] mt-1">{work.tags.join(' · ')}</p>
+                )}
+              </div>
+            </div>
+            <div class="flex items-center gap-3">
+              <GlassButton size="sm" href={`/admin/work-editor?id=${work.id}`}>编辑</GlassButton>
+              <button
+                class="delete-btn text-sm text-[var(--text-muted)] hover:text-[var(--rose)] transition-colors cursor-pointer bg-transparent border-none px-2"
+                data-delete-id={work.id}
+                data-delete-title={work.title}
+              >
+                删除
+              </button>
+            </div>
+          </div>
+        </GlassCard>
+      ))
+    )}
+  </div>
+
+  <!-- 删除确认弹窗 -->
+  <div id="delete-modal" class="hidden fixed inset-0 z-200 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+    <div class="glass p-8 max-w-md w-full mx-4">
+      <h3 class="text-lg font-bold mb-4 text-[var(--text-primary)]" style="font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;">
+        确认删除
+      </h3>
+      <p class="mb-6 text-[var(--text-secondary)] text-sm">
+        确定要删除作品「<strong id="delete-title"></strong>」？
+      </p>
+      <div class="flex gap-3 justify-end">
+        <button id="cancel-delete" class="glass px-4 py-2 rounded-[14px] text-sm cursor-pointer text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">
+          取消
+        </button>
+        <button id="confirm-delete" class="px-4 py-2 rounded-[14px] text-sm cursor-pointer bg-[var(--rose)]/20 border border-[var(--rose)]/30 text-[var(--rose)] hover:bg-[var(--rose)]/30 transition-colors">
+          确认删除
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let deleteId = '';
+    const modal = document.getElementById('delete-modal');
+    const titleSpan = document.getElementById('delete-title');
+
+    document.querySelectorAll('.delete-btn').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const el = btn;
+        deleteId = el.dataset.deleteId;
+        if (titleSpan) titleSpan.textContent = el.dataset.deleteTitle;
+        if (modal) modal.classList.remove('hidden');
+      });
+    });
+
+    document.getElementById('cancel-delete')?.addEventListener('click', () => {
+      if (modal) modal.classList.add('hidden');
+    });
+
+    document.getElementById('confirm-delete')?.addEventListener('click', async () => {
+      try {
+        const res = await fetch(`/api/works/${deleteId}`, { method: 'DELETE' });
+        if (res.ok) {
+          window.location.reload();
+        } else {
+          alert('删除失败');
+        }
+      } catch { alert('网络错误'); }
+      if (modal) modal.classList.add('hidden');
+    });
+  </script>
+</AdminLayout>

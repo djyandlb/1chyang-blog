@@ -1,0 +1,38 @@
+---
+// src/pages/works.astro — 作品展示页
+import BlogLayout from '../layouts/BlogLayout.astro';
+import WorkCard from '../components/works/WorkCard.astro';
+import fs from 'node:fs';
+import path from 'node:path';
+import type { Work } from '../components/works/WorkCard.astro';
+
+let works: Work[] = [];
+try {
+  const worksPath = path.resolve('data/works.json');
+  if (fs.existsSync(worksPath)) {
+    works = JSON.parse(fs.readFileSync(worksPath, 'utf-8'));
+  }
+} catch {}
+---
+
+<BlogLayout title="作品">
+
+  <div class="mt-12 mb-8">
+    <h1 class="text-2xl font-bold" style="font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif; font-weight: 900;">
+      ✨ 作品展示
+    </h1>
+    <p class="text-sm text-[var(--text-muted)] mt-2">一些做过的项目和作品</p>
+  </div>
+
+  {works.length === 0 ? (
+    <div class="glass p-12 text-center text-[var(--text-muted)]">
+      暂无作品，敬请期待～
+    </div>
+  ) : (
+    <div class="grid gap-6" style="grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));">
+      {works.map((work) => (
+        <WorkCard work={work} />
+      ))}
+    </div>
+  )}
+</BlogLayout>

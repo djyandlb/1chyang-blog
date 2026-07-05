@@ -1,0 +1,51 @@
+---
+// src/layouts/BlogLayout.astro — 前台通用布局
+import GlassNav from '../components/glass/GlassNav.astro';
+import Footer from '../components/layout/Footer.astro';
+import '../styles/global.css';
+
+export interface Props {
+  title?: string;
+}
+
+const { title = '首页' } = Astro.props;
+
+const navItems = [
+  { label: '首页', href: '/' },
+  { label: '归档', href: '/archive' },
+  { label: '作品', href: '/works' },
+  { label: '友链', href: '/friends' },
+  { label: '关于', href: '/about' },
+];
+---
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>一步穿杨 - {title}</title>
+  <!--
+    字体策略（中国大陆可用）：
+    - 霞鹜文楷：jsDelivr CDN → 正文首选
+    - 思源宋体/黑体：Google Fonts 在大陆被墙，使用系统回退
+      标题: Microsoft YaHei Bold（Windows）/ PingFang SC（Mac）
+      UI: Microsoft YaHei / PingFang SC
+  -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lxgw-wenkai-webfont@1.7.0/style.css" />
+</head>
+<body>
+  <!-- 背景氛围 -->
+  <div class="bg-atmosphere"></div>
+
+  <div style="position: relative; z-index: 10; max-width: 1100px; margin: 0 auto; padding-left: 24px; padding-right: 24px;">
+    <GlassNav items={navItems} />
+
+    <main>
+      <slot />
+    </main>
+
+    <Footer />
+  </div>
+</body>
+</html>

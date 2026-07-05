@@ -1,0 +1,34 @@
+---
+// src/components/glass/GlassModal.astro — 磨砂玻璃确认弹窗
+export interface Props {
+  open: boolean;
+  title?: string;
+}
+
+const { open, title = '确认' } = Astro.props;
+---
+
+{open && (
+  <div class="fixed inset-0 z-200 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+    <div class="glass p-8 max-w-md w-full mx-4 animate-[fadeIn_0.2s_ease]">
+      <h3
+        class="text-lg font-bold mb-4 text-[var(--text-primary)]"
+        style="font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;"
+      >
+        {title}
+      </h3>
+      <div class="mb-6 text-[var(--text-secondary)] text-sm">
+        <slot name="body" />
+      </div>
+      <div class="flex gap-3 justify-end">
+        <slot name="actions" />
+      </div>
+    </div>
+  </div>
+)}
+<style>
+  @keyframes fadeIn {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+  }
+</style>

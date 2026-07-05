@@ -1,0 +1,139 @@
+---
+// src/pages/admin/friends.astro — 友链管理
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import GlassCard from '../../components/glass/GlassCard.astro';
+import GlassButton from '../../components/glass/GlassButton.astro';
+import { getAllFriends } from '../../lib/friends';
+
+export const prerender = false;
+
+const friends = getAllFriends();
+---
+
+<AdminLayout>
+  <div class="flex items-center justify-between mb-8">
+    <h1 class="text-2xl font-bold" style="font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif; font-weight: 900;">
+      🔗 友链管理
+    </h1>
+    <GlassButton variant="primary" id="add-btn">➕ 添加友链</GlassButton>
+  </div>
+
+  <!-- 添加/编辑表单 -->
+  <div id="friend-form" class="mb-6 hidden">
+    <GlassCard padding="medium">
+      <form id="friend-form-inner" class="flex flex-col gap-3">
+        <div class="grid grid-cols-2 gap-4">
+          <div class="flex flex-col gap-2">
+            <label class="text-sm text-[var(--text-secondary)]" style="font-family: 'Microsoft YaHei', sans-serif;">名称</label>
+            <input name="name" required class="glass px-4 py-2.5 text-sm text-[var(--text-primary)] outline-none" style="border-radius: 12px; font-family: 'Microsoft YaHei', sans-serif;" placeholder="博客名称" />
+          </div>
+          <div class="flex flex-col gap-2">
+            <label class="text-sm text-[var(--text-secondary)]" style="font-family: 'Microsoft YaHei', sans-serif;">URL</label>
+            <input name="url" required class="glass px-4 py-2.5 text-sm text-[var(--text-primary)] outline-none" style="border-radius: 12px; font-family: 'Microsoft YaHei', sans-serif;" placeholder="https://" />
+          </div>
+        </div>
+        <div class="flex flex-col gap-2">
+          <label class="text-sm text-[var(--text-secondary)]" style="font-family: 'Microsoft YaHei', sans-serif;">描述</label>
+          <input name="description" class="glass px-4 py-2.5 text-sm text-[var(--text-primary)] outline-none" style="border-radius: 12px; font-family: 'Microsoft YaHei', sans-serif;" placeholder="一句话描述" />
+        </div>
+        <input type="hidden" name="id" value="" />
+        <div class="flex gap-3">
+          <button type="submit" class="glass px-5 py-2 rounded-[14px] text-sm cursor-pointer text-[var(--gold)] hover:bg-[var(--gold)]/10 transition-colors" style="font-family: 'Microsoft YaHei', sans-serif;">💾 保存</button>
+          <button type="button" id="cancel-form" class="text-sm text-[var(--text-muted)] cursor-pointer bg-transparent border-none hover:text-[var(--text-primary)] transition-colors" style="font-family: 'Microsoft YaHei', sans-serif;">取消</button>
+        </div>
+      </form>
+    </GlassCard>
+  </div>
+
+  <!-- 友链列表 -->
+  <div class="space-y-3">
+    {friends.length === 0 ? (
+      <GlassCard padding="large" class="text-center text-[var(--text-muted)]">
+        还没有友链，点击上方按钮添加～
+      </GlassCard>
+    ) : (
+      friends.map((friend) => (
+        <GlassCard padding="medium">
+          <div class="flex items-center justify-between gap-4">
+            <div class="flex-1">
+              <h3 class="text-lg font-bold text-[var(--text-primary)]">{friend.name}</h3>
+              <p class="text-sm text-[var(--text-muted)]">{friend.description}</p>
+              <p class="text-xs text-[var(--text-muted)] mt-1">{friend.url}</p>
+            </div>
+            <div class="flex items-center gap-3">
+              <button class="edit-btn text-sm text-[var(--gold)] cursor-pointer bg-transparent border-none hover:text-[var(--gold-light)] transition-colors"
+                data-id={friend.id} data-name={friend.name} data-url={friend.url} data-desc={friend.description}>编辑</button>
+              <button class="del-btn text-sm text-[var(--text-muted)] cursor-pointer bg-transparent border-none hover:text-[var(--rose)] transition-colors"
+                data-id={friend.id} data-name={friend.name}>删除</button>
+            </div>
+          </div>
+        </GlassCard>
+      ))
+    )}
+  </div>
+
+  <script>
+    const form = document.getElementById('friend-form');
+    const formInner = document.getElementById('friend-form-inner');
+    const addBtn = document.getElementById('add-btn');
+    const cancelBtn = document.getElementById('cancel-form');
+    const idInput = formInner?.querySelector('[name="id"]');
+
+    addBtn?.addEventListener('click', () => {
+      if (form) {
+        form.classList.remove('hidden');
+        formInner?.reset();
+        if (idInput) idInput.value = '';
+      }
+    });
+
+    cancelBtn?.addEventListener('click', () => {
+      if (form) form.classList.add('hidden');
+    });
+
+    // 编辑
+    document.querySelectorAll('.edit-btn').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const el = btn;
+        if (form) form.classList.remove('hidden');
+        const nameInput = formInner?.querySelector('[name="name"]');
+        const urlInput = formInner?.querySelector('[name="url"]');
+        const descInput = formInner?.querySelector('[name="description"]');
+        if (nameInput) nameInput.value = el.dataset.name;
+        if (urlInput) urlInput.value = el.dataset.url;
+        if (descInput) descInput.value = el.dataset.desc;
+        if (idInput) idInput.value = el.dataset.id;
+      });
+    });
+
+    // 提交
+    formInner?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = new FormData(formInner);
+      const id = formData.get('id');
+      const data = { name: formData.get('name'), url: formData.get('url'), description: formData.get('description') };
+
+      const method = id ? 'PUT' : 'POST';
+      const url = id ? `/api/friends/${id}` : '/api/friends';
+
+      try {
+        const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+        if (res.ok) window.location.reload();
+        else { const err = await res.json(); alert(err.error || '失败'); }
+      } catch { alert('网络错误'); }
+    });
+
+    // 删除
+    document.querySelectorAll('.del-btn').forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        const id = (btn).dataset.id;
+        if (!confirm(`删除「${(btn).dataset.name}」？`)) return;
+        try {
+          const res = await fetch(`/api/friends/${id}`, { method: 'DELETE' });
+          if (res.ok) window.location.reload();
+          else alert('删除失败');
+        } catch { alert('网络错误'); }
+      });
+    });
+  </script>
+</AdminLayout>

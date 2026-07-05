@@ -1,0 +1,29 @@
+---
+// src/pages/about.astro — 关于我（从后台设置读取）
+import BlogLayout from '../layouts/BlogLayout.astro';
+import GlassCard from '../components/glass/GlassCard.astro';
+import { getSettings } from '../lib/settings';
+import { marked } from 'marked';
+
+const settings = getSettings();
+const aboutHtml = marked.parse(settings.about || '') as string;
+---
+
+<BlogLayout title="关于">
+
+  <div class="mt-12 max-w-[700px] mx-auto">
+    <h1 class="text-2xl font-bold mb-8" style="font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif; font-weight: 900;">
+      👤 关于我
+    </h1>
+
+    <GlassCard padding="large" class="text-[var(--text-secondary)] leading-relaxed">
+      <div
+        class="prose prose-invert max-w-none
+          prose-p:text-[var(--text-secondary)] prose-p:leading-relaxed
+          prose-strong:text-[var(--text-primary)]
+          prose-a:text-[var(--gold)] prose-a:no-underline"
+        set:html={aboutHtml}
+      />
+    </GlassCard>
+  </div>
+</BlogLayout>

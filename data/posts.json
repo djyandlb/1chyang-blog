@@ -1,0 +1,13 @@
+[
+  {
+    "id": "1",
+    "title": "你好，世界",
+    "slug": "hello-world",
+    "date": "2026-07-05",
+    "tags": [
+      "杂谈"
+    ],
+    "excerpt": "「一步穿杨」博客正式上线的第一篇文章。",
+    "published": true
+  }
+]

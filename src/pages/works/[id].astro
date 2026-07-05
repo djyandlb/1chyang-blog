@@ -1,0 +1,60 @@
+---
+// src/pages/works/[id].astro — 作品详情页
+import BlogLayout from '../../layouts/BlogLayout.astro';
+import GlassCard from '../../components/glass/GlassCard.astro';
+import GlassTag from '../../components/glass/GlassTag.astro';
+import GlassButton from '../../components/glass/GlassButton.astro';
+import { getWorkById } from '../../lib/works';
+
+// 预渲染所有已有作品
+export async function getStaticPaths() {
+  const fs = await import('node:fs');
+  const path = await import('node:path');
+  const worksPath = path.resolve('data/works.json');
+  if (!fs.existsSync(worksPath)) return [];
+  const works = JSON.parse(fs.readFileSync(worksPath, 'utf-8'));
+  return works.map((w: any) => ({ params: { id: w.id } }));
+}
+
+const { id } = Astro.params;
+const work = getWorkById(id!);
+if (!work) return Astro.redirect('/404');
+---
+
+<BlogLayout title={work.title}>
+  <div class="max-w-[700px] mx-auto mt-12">
+    <a href="/works" class="inline-block mb-6 text-sm text-[var(--text-muted)] no-underline hover:text-[var(--gold-light)] transition-colors" style="font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;">
+      ← 返回作品列表
+    </a>
+
+    <GlassCard padding="large">
+      <div class="text-6xl text-center mb-6">{work.icon}</div>
+      <h1 class="text-3xl font-black text-center mb-4" style="font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;">
+        {work.title}
+      </h1>
+
+      <div class="flex flex-wrap gap-2 justify-center mb-6">
+        {work.tags.map((tag: string) => (
+          <GlassTag>{tag}</GlassTag>
+        ))}
+      </div>
+
+      <p class="text-base text-[var(--text-secondary)] text-center mb-8 leading-relaxed">
+        {work.description}
+      </p>
+
+      <div class="flex gap-4 justify-center flex-wrap mt-8">
+        {work.url && (
+          <GlassButton variant="primary" href={work.url} size="lg">
+            🔗 查看项目
+          </GlassButton>
+        )}
+        {work.fileUrl && (
+          <GlassButton variant="ghost" href={work.fileUrl} size="lg">
+            📥 下载 {work.fileName || '文件'}
+          </GlassButton>
+        )}
+      </div>
+    </GlassCard>
+  </div>
+</BlogLayout>

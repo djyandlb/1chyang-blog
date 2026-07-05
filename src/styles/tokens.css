@@ -1,0 +1,32 @@
+/* ===== 一步穿杨 · 设计令牌 ===== */
+:root {
+  /* 背景 */
+  --bg-deep: #0a0a1a;
+  --bg-mid: #111132;
+
+  /* 磨砂玻璃 */
+  --glass-bg: rgba(255, 255, 255, 0.03);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-hover-bg: rgba(255, 255, 255, 0.06);
+  --glass-hover-border: rgba(255, 255, 255, 0.15);
+  --glass-blur-sm: 8px;
+  --glass-blur: 16px;
+  --glass-blur-lg: 24px;
+
+  /* 文字 */
+  --text-primary: rgba(255, 255, 255, 0.92);
+  --text-secondary: rgba(255, 255, 255, 0.60);
+  --text-muted: rgba(255, 255, 255, 0.35);
+
+  /* 强调色 */
+  --gold: #d4a853;
+  --gold-light: #f0d278;
+  --rose: #c97b84;
+  --rose-light: #e8a8ae;
+  --accent-gradient: linear-gradient(135deg, var(--gold) 0%, var(--rose) 100%);
+
+  /* 圆角 */
+  --radius-sm: 12px;
+  --radius: 20px;
+  --radius-lg: 28px;
+}

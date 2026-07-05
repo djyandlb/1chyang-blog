@@ -1,0 +1,34 @@
+---
+// src/components/blog/ArticleCard.astro — 文章卡片
+import GlassCard from '../glass/GlassCard.astro';
+import GlassTag from '../glass/GlassTag.astro';
+import type { PostMeta } from '../../lib/posts';
+
+export interface Props {
+  post: PostMeta;
+}
+
+const { post } = Astro.props;
+---
+
+<GlassCard hover={true} padding="medium" class="h-full flex flex-col">
+  <time class="text-xs text-[var(--text-muted)]" style="font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;">
+    {post.date}
+  </time>
+  <h3 class="text-xl font-bold mt-2.5 mb-3 leading-relaxed">
+    <a
+      href={`/posts/${post.slug}`}
+      class="text-[var(--text-primary)] no-underline transition-colors duration-250 hover:text-[var(--gold-light)]"
+    >
+      {post.title}
+    </a>
+  </h3>
+  <p class="text-sm text-[var(--text-secondary)] mb-4 flex-1" style="display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">
+    {post.excerpt}
+  </p>
+  <div class="flex flex-wrap gap-2 mt-auto">
+    {post.tags.map((tag) => (
+      <GlassTag href={`/tags/${tag}`}>{tag}</GlassTag>
+    ))}
+  </div>
+</GlassCard>

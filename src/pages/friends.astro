@@ -1,0 +1,34 @@
+---
+// src/pages/friends.astro — 友链页（从后台管理读取）
+import BlogLayout from '../layouts/BlogLayout.astro';
+import GlassCard from '../components/glass/GlassCard.astro';
+import { getAllFriends } from '../lib/friends';
+
+const friends = getAllFriends();
+---
+
+<BlogLayout title="友链">
+
+  <div class="mt-12 max-w-[700px] mx-auto">
+    <h1 class="text-2xl font-bold mb-8" style="font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif; font-weight: 900;">
+      🔗 友情链接
+    </h1>
+
+    {friends.length === 0 ? (
+      <GlassCard padding="large" class="text-center text-[var(--text-muted)]">
+        友链席虚位以待～
+      </GlassCard>
+    ) : (
+      <div class="space-y-4">
+        {friends.map((friend) => (
+          <a href={friend.url} target="_blank" rel="noopener noreferrer" class="no-underline text-inherit block">
+            <GlassCard hover={true} padding="medium">
+              <h3 class="text-lg font-bold text-[var(--text-primary)]">{friend.name}</h3>
+              <p class="text-sm text-[var(--text-muted)] mt-1">{friend.description}</p>
+            </GlassCard>
+          </a>
+        ))}
+      </div>
+    )}
+  </div>
+</BlogLayout>

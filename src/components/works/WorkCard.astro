@@ -1,0 +1,49 @@
+---
+// src/components/works/WorkCard.astro — 作品卡片（链接到详情页）
+import GlassCard from '../glass/GlassCard.astro';
+import GlassTag from '../glass/GlassTag.astro';
+
+export interface Work {
+  id: string;
+  title: string;
+  description: string;
+  url: string;
+  icon: string;
+  tags: string[];
+  fileUrl?: string;
+  fileName?: string;
+}
+
+export interface Props {
+  work: Work;
+}
+
+const { work } = Astro.props;
+---
+
+<a href={`/works/${work.id}`} class="no-underline text-inherit block group">
+  <GlassCard hover={true} padding="medium" class="h-full">
+    <div
+      class="w-12 h-12 rounded-[14px] mb-4 flex items-center justify-center text-2xl glass"
+      style="backdrop-filter: blur(var(--glass-blur-sm));"
+    >
+      {work.icon}
+    </div>
+    <h3 class="text-lg font-bold mb-2">{work.title}</h3>
+    <p class="text-sm text-[var(--text-secondary)] mb-3.5">{work.description}</p>
+    <div class="flex flex-wrap gap-2 mb-3">
+      {work.tags.map((tag: string) => (
+        <GlassTag>{tag}</GlassTag>
+      ))}
+      {work.fileUrl && (
+        <span class="inline-block px-2.5 py-0.5 rounded-lg text-xs" style="background: rgba(212,168,83,0.1); color: var(--gold);">📎 可下载</span>
+      )}
+    </div>
+    <span
+      class="text-xs text-[var(--gold)] transition-all duration-300 opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0"
+      style="font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;"
+    >
+      查看详情 →
+    </span>
+  </GlassCard>
+</a>

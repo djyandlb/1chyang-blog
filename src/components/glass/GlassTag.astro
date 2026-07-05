@@ -1,0 +1,21 @@
+---
+// src/components/glass/GlassTag.astro — 磨砂玻璃标签
+export interface Props {
+  href?: string;
+  class?: string;
+}
+
+const { href, class: extraClass = '' } = Astro.props;
+const baseClass = `inline-block px-4 py-1.5 rounded-lg text-xs
+  bg-[var(--gold)]/10 border border-[var(--gold)]/20 text-[var(--gold)]
+  backdrop-blur-sm transition-all duration-250
+  hover:bg-[var(--gold)]/18 hover:border-[var(--gold)]/40
+  ${extraClass}`;
+const style = "font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;";
+---
+
+{href ? (
+  <a href={href} class={baseClass} style={style}><slot /></a>
+) : (
+  <span class={baseClass} style={style}><slot /></span>
+)}

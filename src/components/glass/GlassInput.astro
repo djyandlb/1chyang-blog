@@ -1,0 +1,38 @@
+---
+// src/components/glass/GlassInput.astro — 磨砂玻璃输入框
+export interface Props {
+  label?: string;
+  type?: 'text' | 'password' | 'email' | 'textarea';
+  name: string;
+  value?: string;
+  placeholder?: string;
+  required?: boolean;
+  class?: string;
+}
+
+const { label, type = 'text', name, value = '', placeholder = '', required = false, class: extraClass = '' } = Astro.props;
+const isTextarea = type === 'textarea';
+const Tag = isTextarea ? 'textarea' : 'input';
+---
+
+<div class={`flex flex-col gap-2 ${extraClass}`}>
+  {label && (
+    <label
+      for={name}
+      class="text-sm text-[var(--text-secondary)]"
+      style="font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;"
+    >
+      {label}
+    </label>
+  )}
+  <Tag
+    id={name}
+    name={name}
+    {...(isTextarea ? {} : { type })}
+    value={isTextarea ? undefined : value}
+    placeholder={placeholder}
+    {...(required ? { required: true } : {})}
+    class={`glass px-4 py-3 text-[var(--text-primary)] placeholder:text-[var(--text-muted)] outline-none transition-all duration-250 focus:border-[var(--gold)]/50 focus:shadow-[0_0_20px_rgba(212,168,83,0.08)] ${isTextarea ? 'min-h-[200px] resize-y' : ''}`}
+    style="font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif; border-radius: 14px;"
+  >{isTextarea ? value : ''}</Tag>
+</div>

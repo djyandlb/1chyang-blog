@@ -1,0 +1,35 @@
+---
+// src/layouts/AdminLayout.astro — 后台通用布局
+import '../styles/global.css';
+---
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>后台管理 - 一步穿杨</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lxgw-wenkai-webfont@1.7.0/style.css" />
+</head>
+<body>
+  <div class="bg-atmosphere"></div>
+  <div style="position: relative; z-index: 10; max-width: 1200px; margin: 0 auto; padding-left: 24px; padding-right: 24px;">
+    <!-- 后台顶部栏 -->
+    <div class="glass flex items-center justify-between px-7 py-3.5 mt-5 mb-8" style="backdrop-filter: blur(var(--glass-blur-lg));">
+      <a href="/admin" class="text-gradient text-lg font-bold tracking-wider no-underline">后台管理</a>
+      <div class="flex items-center gap-5">
+        <a href="/admin/editor" class="text-sm text-[var(--gold)] no-underline hover:text-[var(--gold-light)] transition-colors">写文章</a>
+        <a href="/admin/works" class="text-sm text-[var(--text-secondary)] no-underline hover:text-[var(--gold-light)] transition-colors">作品</a>
+        <a href="/admin/friends" class="text-sm text-[var(--text-secondary)] no-underline hover:text-[var(--gold-light)] transition-colors">友链</a>
+        <a href="/admin/settings" class="text-sm text-[var(--text-secondary)] no-underline hover:text-[var(--gold-light)] transition-colors">设置</a>
+        <a href="/" class="text-sm text-[var(--text-secondary)] no-underline hover:text-[var(--text-primary)] transition-colors">回前台</a>
+        <a href="/api/auth/logout" class="text-sm text-[var(--text-muted)] no-underline hover:text-[var(--rose)] transition-colors">退出</a>
+      </div>
+    </div>
+
+    <main>
+      <slot />
+    </main>
+  </div>
+</body>
+</html>

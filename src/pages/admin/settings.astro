@@ -1,0 +1,68 @@
+---
+// src/pages/admin/settings.astro — 站点设置/关于编辑
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import GlassCard from '../../components/glass/GlassCard.astro';
+import GlassInput from '../../components/glass/GlassInput.astro';
+import GlassButton from '../../components/glass/GlassButton.astro';
+import { getSettings } from '../../lib/settings';
+
+export const prerender = false;
+
+const settings = getSettings();
+---
+
+<AdminLayout>
+  <h1 class="text-2xl font-bold mb-8" style="font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif; font-weight: 900;">
+    ⚙️ 站点设置
+  </h1>
+
+  <div class="max-w-[700px]">
+    <GlassCard padding="large">
+      <form id="settings-form" class="flex flex-col gap-4">
+        <GlassInput label="首页副标题" name="subtitle" type="text" value={settings.subtitle} placeholder="博客副标题" />
+
+        <div class="flex flex-col gap-2">
+          <label class="text-sm text-[var(--text-secondary)]" style="font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;">
+            关于页面内容（Markdown 格式）
+          </label>
+          <textarea
+            name="about"
+            class="glass px-4 py-3 text-[var(--text-primary)] placeholder:text-[var(--text-muted)] outline-none transition-all min-h-[300px] resize-y"
+            style="font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif; border-radius: 14px;"
+          >{settings.about}</textarea>
+        </div>
+
+        <div class="flex gap-3 mt-2">
+          <GlassButton type="submit" variant="primary" size="md">💾 保存设置</GlassButton>
+        </div>
+      </form>
+    </GlassCard>
+  </div>
+
+  <script>
+    const form = document.getElementById('settings-form');
+    if (form) {
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const formData = new FormData(form);
+        const data = {
+          subtitle: formData.get('subtitle'),
+          about: formData.get('about'),
+        };
+
+        try {
+          const res = await fetch('/api/settings', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data),
+          });
+          if (res.ok) {
+            alert('保存成功');
+          } else {
+            alert('保存失败');
+          }
+        } catch { alert('网络错误'); }
+      });
+    }
+  </script>
+</AdminLayout>

@@ -1,0 +1,71 @@
+---
+// src/pages/index.astro — 首页
+import BlogLayout from '../layouts/BlogLayout.astro';
+import ArticleCard from '../components/blog/ArticleCard.astro';
+import WorkCard from '../components/works/WorkCard.astro';
+import { getAllPosts } from '../lib/posts';
+import { getAllWorks } from '../lib/works';
+import { getSettings } from '../lib/settings';
+
+const posts = getAllPosts().slice(0, 6);
+const works = getAllWorks().slice(0, 3);
+const settings = getSettings();
+---
+
+<BlogLayout title="首页">
+
+  <!-- Hero 区域 -->
+  <header class="text-center py-20">
+    <h1
+      style="font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif; font-weight: 900; font-size: 3.6rem;"
+    >
+      <span class="text-gradient">一步穿杨</span>
+    </h1>
+    <p class="text-base text-[var(--text-secondary)] max-w-[500px] mx-auto" style="font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;">
+      {settings.subtitle}
+    </p>
+    <div class="w-20 h-0.5 mx-auto mt-6 bg-gradient-to-r from-transparent via-[var(--gold)] to-transparent rounded-full"></div>
+  </header>
+
+  <!-- 最新文章 -->
+  <section>
+    <div class="flex items-center gap-4 mt-12 mb-6">
+      <h2 class="text-2xl font-bold whitespace-nowrap">📝 最新文章</h2>
+      <div class="flex-1 h-px bg-gradient-to-r from-white/10 to-transparent"></div>
+      <a href="/archive" class="text-sm text-[var(--text-muted)] no-underline hover:text-[var(--gold-light)] transition-colors whitespace-nowrap">
+        全部文章 →
+      </a>
+    </div>
+
+    <div class="grid gap-6" style="grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));">
+      {posts.map((post) => (
+        <ArticleCard post={post} />
+      ))}
+    </div>
+
+    {posts.length === 0 && (
+      <div class="glass p-12 text-center text-[var(--text-muted)]">
+        还没有文章，敬请期待～
+      </div>
+    )}
+  </section>
+
+  <!-- 精选作品 -->
+  {works.length > 0 && (
+    <section>
+      <div class="flex items-center gap-4 mt-16 mb-6">
+        <h2 class="text-2xl font-bold whitespace-nowrap">✨ 作品</h2>
+        <div class="flex-1 h-px bg-gradient-to-r from-white/10 to-transparent"></div>
+        <a href="/works" class="text-sm text-[var(--text-muted)] no-underline hover:text-[var(--gold-light)] transition-colors whitespace-nowrap">
+          全部作品 →
+        </a>
+      </div>
+
+      <div class="grid gap-6" style="grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));">
+        {works.map((work) => (
+          <WorkCard work={work} />
+        ))}
+      </div>
+    </section>
+  )}
+</BlogLayout>

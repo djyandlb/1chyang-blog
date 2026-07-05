@@ -1,0 +1,65 @@
+---
+// src/pages/posts/[slug].astro — 文章详情页
+import BlogLayout from '../../layouts/BlogLayout.astro';
+import GlassCard from '../../components/glass/GlassCard.astro';
+import GlassTag from '../../components/glass/GlassTag.astro';
+import { getPostBySlug } from '../../lib/posts';
+import { marked } from 'marked';
+
+export async function getStaticPaths() {
+  const { getAllPosts } = await import('../../lib/posts');
+  const posts = getAllPosts();
+  return posts.map((p) => ({ params: { slug: p.slug } }));
+}
+
+const { slug } = Astro.params;
+const post = getPostBySlug(slug!);
+
+if (!post) {
+  return Astro.redirect('/404');
+}
+
+const htmlContent = marked.parse(post.content || '') as string;
+---
+
+<BlogLayout title={post.title}>
+
+  <article class="max-w-[800px] mx-auto mt-12">
+
+    <!-- 返回按钮 -->
+    <a href="/" class="inline-block mb-6 text-sm text-[var(--text-muted)] no-underline hover:text-[var(--gold-light)] transition-colors" style="font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;">
+      ← 返回首页
+    </a>
+
+    <GlassCard padding="large">
+      <header class="mb-8 text-center">
+        <time class="text-xs text-[var(--text-muted)]" style="font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;">
+          {post.date}
+        </time>
+        <h1
+          class="text-3xl font-black mt-3 mb-5 leading-tight"
+          style="font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif; font-weight: 900;"
+        >
+          {post.title}
+        </h1>
+        <div class="flex flex-wrap gap-2 justify-center">
+          {post.tags.map((tag: string) => (
+            <GlassTag href={`/tags/${tag}`}>{tag}</GlassTag>
+          ))}
+        </div>
+      </header>
+
+      <!-- Markdown 渲染内容 -->
+      <div
+        class="prose prose-invert max-w-none
+          prose-headings:font-black prose-headings:text-[var(--text-primary)]
+          prose-p:text-[var(--text-secondary)] prose-p:leading-relaxed
+          prose-a:text-[var(--gold)] prose-a:no-underline prose-a:hover:text-[var(--gold-light)]
+          prose-code:bg-[var(--glass-bg)] prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded
+          prose-pre:bg-[var(--glass-bg)] prose-pre:border prose-pre:border-[var(--glass-border)]
+          prose-img:rounded-[var(--radius)]"
+        set:html={htmlContent}
+      />
+    </GlassCard>
+  </article>
+</BlogLayout>

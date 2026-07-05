@@ -1,0 +1,123 @@
+---
+// src/pages/admin/index.astro — 后台仪表盘
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import GlassCard from '../../components/glass/GlassCard.astro';
+import GlassButton from '../../components/glass/GlassButton.astro';
+import GlassTag from '../../components/glass/GlassTag.astro';
+import GlassModal from '../../components/glass/GlassModal.astro';
+import { getAllPostsAdmin } from '../../lib/posts';
+
+export const prerender = false;
+
+const posts = getAllPostsAdmin();
+---
+
+<AdminLayout>
+  <div class="flex items-center justify-between mb-8">
+    <h1
+      class="text-2xl font-bold"
+      style="font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif; font-weight: 900;"
+    >
+      文章管理
+    </h1>
+    <GlassButton variant="primary" href="/admin/editor">✏️ 新建文章</GlassButton>
+  </div>
+
+  <div class="space-y-3">
+    {posts.length === 0 ? (
+      <GlassCard padding="large" class="text-center text-[var(--text-muted)]">
+        还没有文章，写第一篇吧～
+      </GlassCard>
+    ) : (
+      posts.map((post) => (
+        <GlassCard padding="medium">
+          <div class="flex items-center justify-between gap-4 flex-wrap">
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-3 flex-wrap">
+                <h3 class="text-lg font-bold text-[var(--text-primary)]">{post.title}</h3>
+                {!post.published && (
+                  <span class="text-xs px-2 py-0.5 rounded-full bg-[var(--rose)]/15 text-[var(--rose)]">草稿</span>
+                )}
+              </div>
+              <div class="flex items-center gap-3 mt-2">
+                <time class="text-xs text-[var(--text-muted)]" style="font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;">
+                  {post.date}
+                </time>
+                <span class="text-xs text-[var(--text-muted)]">/{post.slug}</span>
+              </div>
+              <div class="flex flex-wrap gap-1.5 mt-2">
+                {post.tags.map((tag: string) => (
+                  <GlassTag>{tag}</GlassTag>
+                ))}
+              </div>
+            </div>
+
+            <div class="flex items-center gap-3">
+              <GlassButton size="sm" href={`/admin/editor?id=${post.id}`}>编辑</GlassButton>
+              <button
+                class="delete-btn text-sm text-[var(--text-muted)] hover:text-[var(--rose)] transition-colors cursor-pointer bg-transparent border-none px-2"
+                data-delete-id={post.id}
+                data-delete-title={post.title}
+              >
+                删除
+              </button>
+            </div>
+          </div>
+        </GlassCard>
+      ))
+    )}
+  </div>
+
+  <!-- 删除确认弹窗 -->
+  <div id="delete-modal" class="hidden">
+    <GlassModal open={true} title="确认删除">
+      <slot name="body">
+        <p>确定要删除文章「<strong id="delete-post-title"></strong>」？此操作不可恢复。</p>
+      </slot>
+      <slot name="actions">
+        <button id="cancel-delete" class="glass px-4 py-2 rounded-[14px] text-sm cursor-pointer text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">
+          取消
+        </button>
+        <button id="confirm-delete" class="px-4 py-2 rounded-[14px] text-sm cursor-pointer bg-[var(--rose)]/20 border border-[var(--rose)]/30 text-[var(--rose)] hover:bg-[var(--rose)]/30 transition-colors">
+          确认删除
+        </button>
+      </slot>
+    </GlassModal>
+  </div>
+
+  <script>
+    let deleteId = '';
+    const modal = document.getElementById('delete-modal')!;
+    const titleSpan = document.getElementById('delete-post-title')!;
+
+    // 点击删除按钮
+    document.querySelectorAll('.delete-btn').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const el = btn as HTMLElement;
+        deleteId = el.dataset.deleteId!;
+        titleSpan.textContent = el.dataset.deleteTitle!;
+        modal.classList.remove('hidden');
+      });
+    });
+
+    // 取消
+    document.getElementById('cancel-delete')!.addEventListener('click', () => {
+      modal.classList.add('hidden');
+    });
+
+    // 确认删除
+    document.getElementById('confirm-delete')!.addEventListener('click', async () => {
+      try {
+        const res = await fetch(`/api/posts/${deleteId}`, { method: 'DELETE' });
+        if (res.ok) {
+          window.location.reload();
+        } else {
+          alert('删除失败');
+        }
+      } catch {
+        alert('网络错误');
+      }
+      modal.classList.add('hidden');
+    });
+  </script>
+</AdminLayout>
