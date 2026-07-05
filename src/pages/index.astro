@@ -1,5 +1,6 @@
 ---
-// src/pages/index.astro — 首页
+// src/pages/index.astro — 首页（动态渲染，读取最新数据）
+export const prerender = false;
 import BlogLayout from '../layouts/BlogLayout.astro';
 import ArticleCard from '../components/blog/ArticleCard.astro';
 import WorkCard from '../components/works/WorkCard.astro';

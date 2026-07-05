@@ -1,18 +1,11 @@
 ---
-// src/pages/works.astro — 作品展示页
+// src/pages/works.astro — 作品展示页（动态）
+export const prerender = false;
 import BlogLayout from '../layouts/BlogLayout.astro';
 import WorkCard from '../components/works/WorkCard.astro';
-import fs from 'node:fs';
-import path from 'node:path';
-import type { Work } from '../components/works/WorkCard.astro';
+import { getAllWorks } from '../lib/works';
 
-let works: Work[] = [];
-try {
-  const worksPath = path.resolve('data/works.json');
-  if (fs.existsSync(worksPath)) {
-    works = JSON.parse(fs.readFileSync(worksPath, 'utf-8'));
-  }
-} catch {}
+const works = await getAllWorks();
 ---
 
 <BlogLayout title="作品">

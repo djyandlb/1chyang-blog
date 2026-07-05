@@ -1,19 +1,14 @@
 ---
-// src/pages/posts/[slug].astro — 文章详情页
+// src/pages/posts/[slug].astro — 文章详情页（动态）
+export const prerender = false;
 import BlogLayout from '../../layouts/BlogLayout.astro';
 import GlassCard from '../../components/glass/GlassCard.astro';
 import GlassTag from '../../components/glass/GlassTag.astro';
 import { getPostBySlug } from '../../lib/posts';
 import { marked } from 'marked';
 
-export async function getStaticPaths() {
-  const { getAllPosts } = await import('../../lib/posts');
-  const posts = await getAllPosts();
-  return posts.map((p) => ({ params: { slug: p.slug } }));
-}
-
 const { slug } = Astro.params;
-const post = await getPostBySlug(slug!);
+const post = slug ? await getPostBySlug(slug) : null;
 
 if (!post) {
   return Astro.redirect('/404');

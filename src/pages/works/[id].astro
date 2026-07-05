@@ -1,23 +1,14 @@
 ---
-// src/pages/works/[id].astro — 作品详情页
+// src/pages/works/[id].astro — 作品详情页（动态）
+export const prerender = false;
 import BlogLayout from '../../layouts/BlogLayout.astro';
 import GlassCard from '../../components/glass/GlassCard.astro';
 import GlassTag from '../../components/glass/GlassTag.astro';
 import GlassButton from '../../components/glass/GlassButton.astro';
 import { getWorkById } from '../../lib/works';
 
-// 预渲染所有已有作品
-export async function getStaticPaths() {
-  const fs = await import('node:fs');
-  const path = await import('node:path');
-  const worksPath = path.resolve('data/works.json');
-  if (!fs.existsSync(worksPath)) return [];
-  const works = JSON.parse(fs.readFileSync(worksPath, 'utf-8'));
-  return works.map((w: any) => ({ params: { id: w.id } }));
-}
-
 const { id } = Astro.params;
-const work = await getWorkById(id!);
+const work = id ? await getWorkById(id) : null;
 if (!work) return Astro.redirect('/404');
 ---
 
