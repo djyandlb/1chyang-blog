@@ -36,16 +36,7 @@ export async function readData<T>(name: string): Promise<T[]> {
   return getSeed<T>(name);
 }
 
-/** 写入数据（写入 /tmp 缓存，本地开发也写项目文件） */
+/** 写入数据（只写 /tmp，不碰项目文件系统） */
 export async function writeData<T>(name: string, data: T[]): Promise<void> {
-  // 写入 /tmp 缓存（所有环境可写）
   fs.writeFileSync(cacheFile(name), JSON.stringify(data, null, 2), 'utf-8');
-  // 本地开发写项目文件
-  if (!process.env.NETLIFY) {
-    try {
-      const pf = path.resolve('data', `${name}.json`);
-      fs.mkdirSync(path.dirname(pf), { recursive: true });
-      fs.writeFileSync(pf, JSON.stringify(data, null, 2), 'utf-8');
-    } catch {}
-  }
 }

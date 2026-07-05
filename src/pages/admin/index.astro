@@ -69,20 +69,23 @@ const posts = await getAllPostsAdmin();
   </div>
 
   <!-- 删除确认弹窗 -->
-  <div id="delete-modal" class="hidden">
-    <GlassModal open={true} title="确认删除">
-      <slot name="body">
-        <p>确定要删除文章「<strong id="delete-post-title"></strong>」？此操作不可恢复。</p>
-      </slot>
-      <slot name="actions">
+  <div id="delete-modal" class="hidden fixed inset-0 z-200 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+    <div class="glass p-8 max-w-md w-full mx-4">
+      <h3 class="text-lg font-bold mb-4 text-[var(--text-primary)]" style="font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;">
+        确认删除
+      </h3>
+      <p class="mb-6 text-[var(--text-secondary)] text-sm">
+        确定要删除文章「<strong id="delete-post-title"></strong>」？此操作不可恢复。
+      </p>
+      <div class="flex gap-3 justify-end">
         <button id="cancel-delete" class="glass px-4 py-2 rounded-[14px] text-sm cursor-pointer text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">
           取消
         </button>
         <button id="confirm-delete" class="px-4 py-2 rounded-[14px] text-sm cursor-pointer bg-[var(--rose)]/20 border border-[var(--rose)]/30 text-[var(--rose)] hover:bg-[var(--rose)]/30 transition-colors">
           确认删除
         </button>
-      </slot>
-    </GlassModal>
+      </div>
+    </div>
   </div>
 
   <script>

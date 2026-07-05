@@ -6,7 +6,6 @@ import { readData, writeData } from './dataStore';
 
 const DATA_NAME = 'posts';
 const CONTENT_DIR = path.resolve('src/content/posts');
-const isNetlify = !!process.env.NETLIFY;
 
 export interface PostMeta {
   id: string;
@@ -41,23 +40,15 @@ async function readContent(slug: string): Promise<string | null> {
 
 /** 写入文章正文 */
 async function writeContent(slug: string, content: string): Promise<void> {
-  // 写入 /tmp 缓存（所有环境）
+  // 写入 /tmp（所有环境，唯一可写的地方）
+  fs.mkdirSync(path.dirname(tmpContentFile(slug)), { recursive: true });
   fs.writeFileSync(tmpContentFile(slug), content, 'utf-8');
-  // 本地开发也写项目 MD 文件
-  if (!isNetlify) {
-    fs.mkdirSync(CONTENT_DIR, { recursive: true });
-    fs.writeFileSync(path.join(CONTENT_DIR, `${slug}.md`), content, 'utf-8');
-  }
 }
 
 /** 删除文章正文 */
 async function deleteContent(slug: string): Promise<void> {
-  const tmpFile = tmpContentFile(slug);
-  if (fs.existsSync(tmpFile)) fs.unlinkSync(tmpFile);
-  if (!isNetlify) {
-    const mdPath = path.join(CONTENT_DIR, `${slug}.md`);
-    if (fs.existsSync(mdPath)) fs.unlinkSync(mdPath);
-  }
+  const f = tmpContentFile(slug);
+  if (fs.existsSync(f)) fs.unlinkSync(f);
 }
 
 /** 获取所有已发布文章 */
