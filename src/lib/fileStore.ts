@@ -1,9 +1,12 @@
-// src/lib/fileStore.ts — 文件存储（JSON base64，兼容 Netlify Serverless）
+// src/lib/fileStore.ts — 文件存储
+// 开发环境: 本地 JSON 文件
+// 生产环境 (Netlify): Netlify Blobs（持久存储）
 import fs from 'node:fs';
 import path from 'node:path';
+import os from 'node:os';
 
-const DATA_DIR = path.resolve('data');
-const STORE_FILE = path.join(DATA_DIR, 'uploads.json');
+const isNetlify = !!process.env.NETLIFY;
+const STORE_NAME = 'blog-uploads';
 
 interface StoredFile {
   filename: string;
@@ -12,43 +15,69 @@ interface StoredFile {
   mimeType: string;
 }
 
-function readStore(): Record<string, StoredFile> {
-  if (!fs.existsSync(STORE_FILE)) return {};
-  try {
-    return JSON.parse(fs.readFileSync(STORE_FILE, 'utf-8'));
-  } catch {
-    return {};
-  }
+// 本地文件路径（仅 dev 用）
+function getLocalFile(): string {
+  return path.join(process.cwd(), 'data', 'uploads.json');
 }
 
-function writeStore(store: Record<string, StoredFile>): void {
-  fs.mkdirSync(DATA_DIR, { recursive: true });
-  fs.writeFileSync(STORE_FILE, JSON.stringify(store, null, 2), 'utf-8');
+function readLocalStore(): Record<string, StoredFile> {
+  const file = getLocalFile();
+  if (!fs.existsSync(file)) return {};
+  try { return JSON.parse(fs.readFileSync(file, 'utf-8')); } catch { return {}; }
+}
+
+function writeLocalStore(store: Record<string, StoredFile>): void {
+  const file = getLocalFile();
+  fs.mkdirSync(path.dirname(file), { recursive: true });
+  fs.writeFileSync(file, JSON.stringify(store, null, 2), 'utf-8');
 }
 
 /** 存储文件 */
-export function saveFile(filename: string, originalName: string, buffer: Buffer, mimeType: string): void {
-  const store = readStore();
-  store[filename] = {
-    filename,
-    originalName,
-    data: buffer.toString('base64'),
-    mimeType,
-  };
-  writeStore(store);
+export async function saveFile(filename: string, originalName: string, buffer: Buffer, mimeType: string): Promise<void> {
+  if (isNetlify) {
+    const { getStore } = await import('@netlify/blobs');
+    const store = getStore(STORE_NAME);
+    await store.set(filename, buffer, { metadata: { originalName, mimeType } });
+  } else {
+    const store = readLocalStore();
+    store[filename] = { filename, originalName, data: buffer.toString('base64'), mimeType };
+    writeLocalStore(store);
+  }
 }
 
 /** 获取文件 */
-export function getFile(filename: string): StoredFile | null {
-  const store = readStore();
-  return store[filename] || null;
+export async function getFile(filename: string): Promise<StoredFile | null> {
+  if (isNetlify) {
+    const { getStore } = await import('@netlify/blobs');
+    const store = getStore(STORE_NAME);
+    const blob = await store.get(filename, { type: 'arrayBuffer' });
+    if (!blob) return null;
+    const meta = await store.getMetadata(filename);
+    const buffer = Buffer.from(blob);
+    return {
+      filename,
+      originalName: meta?.metadata?.originalName || filename,
+      data: buffer.toString('base64'),
+      mimeType: meta?.metadata?.mimeType || 'application/octet-stream',
+    };
+  } else {
+    const store = readLocalStore();
+    return store[filename] || null;
+  }
 }
 
 /** 删除文件 */
-export function deleteFile(filename: string): boolean {
-  const store = readStore();
-  if (!store[filename]) return false;
-  delete store[filename];
-  writeStore(store);
-  return true;
+export async function deleteFile(filename: string): Promise<boolean> {
+  if (isNetlify) {
+    const { getStore } = await import('@netlify/blobs');
+    const store = getStore(STORE_NAME);
+    await store.delete(filename);
+    return true;
+  } else {
+    const store = readLocalStore();
+    if (!store[filename]) return false;
+    delete store[filename];
+    writeLocalStore(store);
+    return true;
+  }
 }
